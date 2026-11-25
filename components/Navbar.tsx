@@ -3,8 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs"
-import { Authenticated, Unauthenticated, useConvexAuth } from "convex/react"
+import { Show, SignInButton, SignUpButton, UserButton, useAuth, useUser } from "@clerk/nextjs"
 import { Drawer, DrawerBackdrop, DrawerContent, DrawerClose, DrawerDescription, DrawerTitle, DrawerTrigger } from "@ui-sdk/react/drawer"
 import { BookOpen, Crown, GraduationCap, LayoutDashboard, Menu, ShieldCheck, X } from "lucide-react"
 import { isAdminRole, PRO_PLAN_SLUG } from "@/lib/auth" 
@@ -30,8 +29,9 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const pathname = usePathname()
-  const { isAuthenticated } = useConvexAuth()
+  const { isLoaded, isSignedIn } = useAuth()
   const { user } = useUser()
+  const showAuthedNav = isLoaded && !!isSignedIn
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const isAdmin = isAdminRole(user?.publicMetadata)
@@ -87,7 +87,7 @@ export function Navbar() {
                   className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain p-3"
                 >
                   {NAV_LINKS.map(item => {
-                    if (item.authOnly && !isAuthenticated) {
+                    if (item.authOnly && !showAuthedNav) {
                       return null
                     }
                     const active = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))
@@ -128,7 +128,7 @@ export function Navbar() {
                 </nav>
 
                 <div className="border-t-2 border-[#18181B] bg-white p-4 dark:border-[#323244] dark:bg-[#16161F]">
-                  <Authenticated>
+                  <Show when="signed-in">
                     <Show
                       when={checkHas => checkHas({ plan: PRO_PLAN_SLUG}) || checkHas({ feature: "pro_courses" })}
                       fallback={
@@ -147,9 +147,9 @@ export function Navbar() {
                         Pro Membership Active
                       </div>
                     </Show>
-                  </Authenticated>
+                  </Show>
 
-                  <Unauthenticated>
+                  <Show when="signed-out">
                     <div className="flex flex-col gap-2.5">
                       <SignInButton mode="modal">
                         <button
@@ -170,7 +170,7 @@ export function Navbar() {
                         </button>
                       </SignUpButton>
                     </div>
-                  </Unauthenticated>
+                  </Show>
                 </div>
               </DrawerContent>
             </Drawer>
@@ -193,7 +193,7 @@ export function Navbar() {
 
           <nav className="hidden items-center gap-1.5 md:flex" aria-label="Primary">
             {NAV_LINKS.map(item => {
-              if (item.authOnly && !isAuthenticated) {
+              if (item.authOnly && !showAuthedNav) {
                 return null
               }
               const active = 
@@ -243,7 +243,7 @@ export function Navbar() {
             </span>
           </Show>
 
-          <Unauthenticated>
+          <Show when="signed-out">
             <SignInButton mode="modal">
               <button
                 type="button"
@@ -260,9 +260,9 @@ export function Navbar() {
                 Get Started
               </button>
             </SignUpButton>
-          </Unauthenticated>
+          </Show>
 
-          <Authenticated>
+          <Show when="signed-in">
             <Show
               when={checkHas => checkHas({ plan: PRO_PLAN_SLUG }) || checkHas({ feature: "pro_courses" })}
               fallback={
@@ -278,7 +278,7 @@ export function Navbar() {
               {null}
             </Show>
             <UserButton />
-          </Authenticated>
+          </Show>
         </div>
       </div>
     </header>
