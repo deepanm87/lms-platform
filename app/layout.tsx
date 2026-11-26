@@ -4,6 +4,7 @@ import { ConvexClientProvider } from '@/components/ConvexClientProvider'
 import { PageContextProvider } from '@/components/PageContextProvider'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import { LearnlyWidget } from '@/components/learnly/LearnlyWidget'
 import { Bricolage_Grotesque, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google'
 import { Suspense } from 'react'
 import './globals.css'
@@ -50,6 +51,9 @@ export default function RootLayout({
               </Suspense>
               {children}
               <Footer />
+              <Suspense fallback={null}>
+                <LearnlyWidget />
+              </Suspense>
             </PageContextProvider>
           </ConvexClientProvider>
         </ClerkProvider>
